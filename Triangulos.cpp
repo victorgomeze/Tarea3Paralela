@@ -3,10 +3,76 @@
 #include <time.h>
 #include <iostream>
 #include <math.h>
+#include <cmath>
 #include <ctime>
 
 using namespace std;
 
+void ObtenerPuntos(float matriz[5000][3]){
+  FILE *fichero;
+  fichero = fopen("puntos","r");
+  if (fichero==NULL){
+    printf( "Error al abrir el fichero.\n" );
+    system("pause");
+    exit (EXIT_FAILURE);
+  }
+  int i = 0;
+  while (1){
+    if (feof(fichero))
+      break;
+    fscanf (fichero, "%f %f %f\n", &matriz[i][0], &matriz[i][1], &matriz[i][2]);
+    i++;
+   }
+   fclose(fichero);
+}
+
+void ObtenerTriangulos(int matriz[9065][3]){
+  FILE *fichero;
+  fichero = fopen("triangulos","r");
+  if (fichero==NULL){
+    printf( "Error al abrir el fichero.\n" );
+    system("pause");
+    exit (EXIT_FAILURE);
+  }
+  int i = 0;
+  while (1){
+    if (feof(fichero))
+      break;
+    fscanf (fichero, "%d %d %d\n", &matriz[i][0], &matriz[i][1], &matriz[i][2]);
+    i++;
+   }
+   fclose(fichero);
+}
+
+void CalculoPerimetro( float x, int A[9065][3],float B[5000][3]){
+for(int i=0;i<9065;i++{
+//triangulos[i][0];----> A
+//triangulos[i][1];----> b
+//triangulos[i][2];----> c
+
+//B[(A[i][0]-1)][1];----> punto Ax
+//B[(A[i][0]-1)][2];----> punto Ay
+//B[(A[i][1]-1)][1];----> punto Bx
+//B[(A[i][1]-1)][2];----> punto By
+//B[(A[i][2]-1)][1];----> punto Cx
+//B[(A[i][2]-1)][2];----> punto Cy
+
+
+x = x + sqrt((B[(A[i][1]-1)][1] - B[(A[i][0]-1)][1])*(B[(A[i][1]-1)][1] - B[(A[i][0]-1)][1] ) + (B[(A[i][1]-1)][2] - B[(A[i][0]-1)][2])*(B[(A[i][1]-1)][2] - B[(A[i][0]-1)][2]));
+  //printf("El distancia es : %f \n", y);
+x = x + sqrt((B[(A[i][2]-1)][1] - B[(A[i][1]-1)][1])*(B[(A[i][2]-1)][1] - B[(A[i][1]-1)][1] ) + (B[(A[i][2]-1)][2] - B[(A[i][1]-1)][2])*(B[(A[i][2]-1)][2] - B[(A[i][1]-1)][2]));
+  //printf("El PERIMETRO es : %f \n", y);
+x = x + sqrt((B[(A[i][0]-1)][1] - B[(A[i][2]-1)][1])*(B[(A[i][0]-1)][1] - B[(A[i][2]-1)][1] ) + (B[(A[i][0]-1)][2] - B[(A[i][2]-1)][2])*(B[(A[i][0]-1)][2] - B[(A[i][2]-1)][2]));
+
+
+}
+}
+
 int main(int argc, char *argv[]){
+
+float puntos[5000][3], perimetroTotal=0;
+int Triangulos[9605][3];
+
+
 
 }

@@ -1,0 +1,33 @@
+#include "mpi.h"
+#include <stdlib.h>
+#include <time.h>
+#include <iostream>
+#include <math.h>
+#include <ctime>
+
+using namespace std;
+
+void leerPuntos(float matriz[5000][3]){
+  FILE *fichero;
+  fichero = fopen("puntos","r");
+  if (fichero==NULL){
+    printf( "No se puede abrir el fichero.\n" );
+    system("pause");
+    exit (EXIT_FAILURE);
+  }
+  int i = 0;
+  while (1){
+    if (feof(fichero))
+      break;
+    fscanf (fichero, "%f %f %f\n", &matriz[i][0], &matriz[i][1], &matriz[i][2]);
+    i++;
+   }
+   fclose(fichero);
+cout << matriz[i][0] <<  matriz[i][1] <<  matriz[i][2];
+}
+
+int main(int argc, char *argv[]){
+
+float puntos[5000][2];
+
+}
