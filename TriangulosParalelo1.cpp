@@ -1,107 +1,144 @@
 #include "mpi.h"
-#include <time.h>
-#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include <cmath>
-#include <iomanip>
-using namespace std;
-using std::setw;
+#define cantidad_triangulos 9665
+//el perimetro segun el codigo secuencial debiese ser 37855.906250
 
+float calcularperimetro (float puntos1[2],float puntos2[2],float puntos3[2])
+{
+    float lado1,lado2,lado3;
 
-float Perimetro (float a[2], float b[2], float c[2], float y){
-  y = y + sqrt((b[0] - a[0])*(b[0] - a[0] ) + (b[1] - a[1])*(b[1] - a[1]));
-  //printf("El distancia es : %f \n", y);
-  y = y + sqrt((c[0] - b[0])*(c[0] - b[0] ) + (c[1] - b[1])*(c[1] - b[1]));
-  //printf("El PERIMETRO es : %f \n", y);
-  y = y + sqrt((a[0] - c[0])*(a[0] - c[0] ) + (a[1] - c[1])*(a[1] - c[1]));
-  //printf("El PERIMETRO es : %f \n", y);
-  return y;
+    lado1= sqrt((pow((puntos1[0]-puntos2[0]),2))+(pow((puntos1[1]-puntos2[1]),2)));
+    lado2=sqrt((pow((puntos2[0]-puntos3[0]),2))+(pow((puntos2[1]-puntos3[1]),2)));
+    lado3=sqrt((pow((puntos1[0]-puntos3[0]),2))+(pow((puntos1[1]-puntos3[1]),2)));
+
+    return lado1+lado2+lado3;
+}
+int buscarlinea(char fichero[], int linea_buscada)
+{
+    int posicion;
+    FILE *datos=fopen(fichero,"r");
+     int contar=linea_buscada-1;
+    fseek(datos, 0, SEEK_SET);
+    prueba:     
+    if (contar>0)  
+    { 
+    while (fgetc (datos) != '\n');
+        contar--;
+        goto prueba;
+    }
+    posicion=ftell(datos);
+
+    fclose(datos);
+    return posicion;
+
+}
+void buscarpuntos(int triangulo, char fichero[], float puntos[2]){
+    int lado;
+    float x, y;
+    FILE *datos=fopen(fichero,"r");
+    int posicion;
+    posicion=buscarlinea("puntos",triangulo);
+    fseek(datos,posicion,SEEK_SET);
+    fscanf(datos,"%d %f %f", &lado,&x,&y);
+     if (lado==triangulo){
+    puntos[0]=x;
+    puntos[1]=y;
+            }
+    fclose(datos);
+
 }
 
-void ObtenerPuntos(float matriz[5000][3]){
-  FILE *fichero;
-  fichero = fopen("puntos","r");
-  if (fichero==NULL){
-    printf( "No se puede abrir el fichero.\n" );
-    system("pause");
-    exit (EXIT_FAILURE);
-  }
-  int i = 0;
-  while (1){
-    if (feof(fichero))
-      break;
-    fscanf (fichero, "%f %f %f\n", &matriz[i][0], &matriz[i][1], &matriz[i][2]);
-    i++;
-   }
-   fclose(fichero);
+
+    
+float buscartriangulo(char fichero[],int linea, int triangulo[3])
+{
+    float perimetro;
+    float puntos1[2];
+    float puntos2[2];
+    float puntos3[2];
+    FILE *datos = fopen(fichero,"r");
+
+    if(!feof(datos)){
+    int posicion;
+    posicion=buscarlinea("triangulos",linea); 
+    // aqui yo me ubico en la linea que deseo del fichero.
+    fseek(datos,posicion,SEEK_SET);
+    fscanf(datos,"%d %d %d\n",&triangulo[0],&triangulo[1],&triangulo[2]);
+    buscarpuntos(triangulo[0],"puntos",puntos1);
+    buscarpuntos(triangulo[1],"puntos",puntos2);
+    buscarpuntos(triangulo[2],"puntos",puntos3);
+    perimetro=calcularperimetro(puntos1,puntos2,puntos3);        
+
+    fclose(datos);
+    return perimetro;
+}
+    else
+        return 0;
 }
 
-void leerTriangulos(float x, float matriz[5000][3], int li, int lf){
-  FILE *fichero;
-  fichero = fopen("triangulos","r");
-  fseek(fichero,li,SEEK_SET);
-  if (fichero==NULL){
-    printf( "No se puede abrir el fichero.\n" );
-    exit (EXIT_FAILURE);
-  }
-  int i = 0;
-  for (li; li<=lf; li++){
-    if (feof(fichero));
-      break;
-    int a,b,c;
-    fscanf (fichero, "%d %d %d\n", &a, &b, &c);
-    //printf("Los puntos son : %d %d %d\n", a,b,c);
-    float A[2],B[2],C[2];
-    A[0]=matriz[a-1][1];
-    //printf("El X1 es : %f \n", A[0]);
-    A[1]=matriz[a-1][2];
-    //printf("El Y1 es : %f \n", A[1]);
-    B[0]=matriz[b-1][1];
-    //printf("El X2 es : %f \n", B[0]);
-    B[1]=matriz[b-1][2];
-    //printf("El Y2 es : %f \n", B[1]);
-    C[0]=matriz[c-1][1];
-    //printf("El X3 es : %f \n", C[0]);
-    C[1]=matriz[c-1][2];
-    //printf("El Y3 es : %f \n", C[1]);
-    x = Perimetro(A, B, C, x);
-    i++;
-   }
-   fclose(fichero);
-   printf("La suma de todos los perimetros es : %f \n", x);
-}
+int main(int argc, char* argv[])
+{
+    int rank, tamano;
+    int triangulo[3]={0,0,0};
+    int aux1=0;
+    int aux2=0;
+    float perimetro,
+        perimetrototal;
  
-int main(int argc, char *argv[]){
-  MPI_Status estado;
-  int status,rank_actual,cant_proce;
-  int limite[2];
-  float puntos[5000][3];
+  
+    MPI_Init(&argc,&argv);
+    MPI_Comm_size( MPI_COMM_WORLD, &tamano ); // devuelve el numero de procesos en este COMM_WORLD
+    MPI_Comm_rank( MPI_COMM_WORLD, &rank );     // identificate por el rank asignado  
+//inicializando variables.
+    perimetro=0;
+    perimetrototal=0;
+    float aux=0;
+    if(cantidad_triangulos%tamano==0)
+        {
+    
+            aux1=cantidad_triangulos/tamano;
+        }
+    else
+        {
+            
+           aux1=cantidad_triangulos/tamano;
+           aux2=cantidad_triangulos%tamano;
+        }
 
-  MPI_Init(&argc, &argv);  // Inicio de MPI   
-  MPI_Comm_size(MPI_COMM_WORLD, &cant_proce);  // numero de procesadores 
-  MPI_Comm_rank(MPI_COMM_WORLD, &rank_actual); // rango de procesadores 
+    if(rank == 0)
+    {
+        
+        //2417
+        for(int i=1;i<=aux1+aux2;i++)
+        {
+            perimetro=buscartriangulo("triangulos",i,triangulo);
+            aux=perimetro+aux;
+            printf("procesador : %d numero de linea %d= %f\n",rank,i,perimetro);
+        
+            
+        }
 
-  if(rank_actual == 0){//procesador 0 comienza a trabajar
-    for(int i=0; i<cant_proce; i++){
-      ObtenerPuntos(puntos);
-      limite[0] = (9665/cant_proce);//limite inferior (dependiendo de la cantidad de proce dividimos los numeros a procesar) 
-      limite[1] = (9665/cant_proce);//limite superior 
-      status = MPI_Send(limite, 2, MPI_INT, i, 0, MPI_COMM_WORLD);//envio limites
-      status = MPI_Send(&puntos[5000][3], 5000*3, MPI_INT, i, 0, MPI_COMM_WORLD);
+         MPI_Reduce(&aux,&perimetrototal,1,MPI_REAL,MPI_SUM,0,MPI_COMM_WORLD);
+        
+        printf("%f\n",perimetrototal);
+    }  
+
+ else
+    {
+        
+         for(int i =aux1*rank+aux2+1;i<=aux1*rank+aux1+aux2;i++)
+            {
+                perimetro=buscartriangulo("triangulos",i,triangulo);
+                 aux=perimetro+aux;
+                 printf("procesador : %d numero de linea %d= %f\n",rank,i,perimetro);
+            }
+        MPI_Reduce(&aux,&perimetrototal,1,MPI_REAL,MPI_SUM,0,MPI_COMM_WORLD);
+              
     }
 
-    status = MPI_Recv(limite, 2, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);//recibo limite para el proce 0
-    status = MPI_Recv(&puntos[5000][3], 5000*3, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
-    float perimetro=0;
-    leerTriangulos(perimetro, puntos, limite[0],limite[1]);
-  }
-  else{//para los demás procesadores 
-    status = MPI_Recv(limite, 2, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);//recibo limite para el proce 0
-    status = MPI_Recv(&puntos[5000][3], 5000*3, MPI_INT, 0, MPI_ANY_TAG, MPI_COMM_WORLD, &estado);
-    float perimetro=0;
-    leerTriangulos(perimetro, puntos, limite[0],limite[1]);
-  }
-  MPI_Finalize();
+
+    MPI_Finalize();
+    return 0;
 }
