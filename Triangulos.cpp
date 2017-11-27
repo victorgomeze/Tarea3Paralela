@@ -45,7 +45,7 @@ void ObtenerTriangulos(int matriz[9065][3]){
 }
 
 void CalculoPerimetro( float x, int A[9065][3],float B[5000][3]){
-for(int i=0;i<9065;i++{
+for(int i=0;i<9065;i++){
 //triangulos[i][0];----> A
 //triangulos[i][1];----> b
 //triangulos[i][2];----> c
@@ -70,8 +70,13 @@ x = x + sqrt((B[(A[i][0]-1)][1] - B[(A[i][2]-1)][1])*(B[(A[i][0]-1)][1] - B[(A[i
 
 int main(int argc, char *argv[]){
 
-float puntos[5000][3], perimetroTotal=0;
+float puntos[5000][3], perimetroTotal;
 int Triangulos[9605][3];
+ObtenerPuntos(puntos);
+ObtenerTriangulos(Triangulos);
+CalculoPerimetro(perimetroTotal, Triangulos, puntos);
+
+cout << " el perimetro total es : "<< perimetroTotal << endl;
 
 
 
